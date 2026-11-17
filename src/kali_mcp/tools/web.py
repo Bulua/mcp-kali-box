@@ -27,8 +27,9 @@ def register_web_tools(mcp: MCPServer, run_command: CommandRunner) -> None:
 
         The default dictionary is the compact DirB common list installed by the
         image. A custom dictionary may be selected from /workspace or
-        /usr/share/wordlists. `url` may either be a base URL or contain the
-        engine's `FUZZ` marker. Reduce `threads` when testing fragile targets.
+        /usr/share/wordlists. Gobuster requires a base URL; ffuf accepts a
+        base URL or an explicit FUZZ marker. Reduce `threads` when testing
+        fragile targets.
         """
         if not url or not url.strip():
             raise ValueError("url must not be empty")
@@ -39,12 +40,13 @@ def register_web_tools(mcp: MCPServer, run_command: CommandRunner) -> None:
 
         dictionary = resolve_tool_input_file(dictionary_path)
         if engine == "gobuster":
-            target = url if "FUZZ" in url else url.rstrip("/") + "/FUZZ"
+            if "FUZZ" in url:
+                raise ValueError("Gobuster requires a base URL without FUZZ; use ffuf for a FUZZ marker")
             argv = [
                 "gobuster",
                 "dir",
                 "-u",
-                target,
+                url,
                 "-w",
                 str(dictionary),
                 "-t",
