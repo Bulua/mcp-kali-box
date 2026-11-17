@@ -23,6 +23,9 @@ mcp-kali-box/
 │  ├── tools/
 │  │  ├── binary.py          # file, strings, binwalk, exiftool, objdump, gdb, tshark
 │  │  ├── credentials.py     # hydra, john, hashcat identify/crack
+│  │  ├── discovery.py       # subdomains, HTTP probing, templates, TLS
+│  │  ├── internal.py        # SMB, RPC, LDAP, netcat, socat
+│  │  ├── forensics.py       # Volatility 3 and YARA
 │  │  ├── recon.py           # nmap, whatweb, whois, dig
 │  │  ├── web.py             # gobuster/ffuf, sqlmap, nikto, curl
 │  │  └── workspace.py       # file manager and Python script runner
@@ -47,11 +50,14 @@ interfaces inside Docker at port 8000, but Compose publishes only
 `127.0.0.1:8000` to the host. The local `workspace/` directory is mounted at
 `/workspace`; oversized reports are written to `/workspace/reports`.
 
-The build first uses the Tsinghua TUNA Kali mirror over HTTP. The minimal Kali
+The build uses the Tsinghua TUNA Kali mirror for APT. The minimal Kali
 image does not necessarily contain the CA bundle needed for HTTPS before
 `ca-certificates` is installed, while apt still verifies repository signatures
-through Kali's GPG key. To switch mirrors, change `KALI_APT_MIRROR` in
-`docker-compose.yml`, or build directly with another mirror:
+through Kali's GPG key. Python packages use the Aliyun PyPI mirror by default.
+The base image still comes from Docker Hub; set `KALI_BASE_IMAGE` to a trusted
+registry mirror when Docker Hub is slow in your environment. To switch mirrors,
+change `KALI_APT_MIRROR`, `PYPI_INDEX_URL`, or `KALI_BASE_IMAGE` in
+`docker-compose.yml`, or build directly with another apt mirror:
 
 ```powershell
 docker build --build-arg KALI_APT_MIRROR=http://mirrors.aliyun.com/kali -f docker/Dockerfile -t kali-mcp-server:0.1.0 .
@@ -59,6 +65,16 @@ docker build --build-arg KALI_APT_MIRROR=http://mirrors.aliyun.com/kali -f docke
 
 Set `KALI_MCP_TRANSPORT` to `dual`, `sse`, or `streamable-http` if you want a
 single transport. The default is `dual`.
+
+## Additional tools
+
+The server also includes Subfinder and passive Amass subdomain discovery,
+HTTPX probes, Nuclei, Feroxbuster, sslscan, testssl.sh, SMB and RPC
+enumeration, netcat and socat connectivity checks, LDAP search, Volatility 3
+memory analysis, and YARA file matching. File inputs must be in the mounted
+`workspace/` directory. Nuclei template availability depends on the image's
+template package or a separately provisioned template set; update templates
+before relying on its scan coverage.
 
 ## Endpoints
 

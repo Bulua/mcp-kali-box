@@ -31,6 +31,20 @@ async def test_server_registers_all_tool_groups_and_routes():
         "tshark_analyze_pcap",
         "workspace_file_manager",
         "run_python_script",
+        "subdomain_discover",
+        "http_probe",
+        "nuclei_scan",
+        "feroxbuster_scan",
+        "tls_scan",
+        "testssl_scan",
+        "smb_shares",
+        "enum4linux_scan",
+        "tcp_connect",
+        "socat_connect",
+        "ldap_query",
+        "impacket_rpcdump",
+        "volatility_analyze",
+        "yara_scan",
     }
 
     assert tool_names == expected_tools

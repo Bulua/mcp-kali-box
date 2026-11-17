@@ -4,7 +4,9 @@ services:
       context: .
       dockerfile: docker/Dockerfile
       args:
+        KALI_BASE_IMAGE: kalilinux/kali-rolling:latest
         KALI_APT_MIRROR: http://mirrors.tuna.tsinghua.edu.cn/kali
+        PYPI_INDEX_URL: https://mirrors.aliyun.com/pypi/simple/
     image: kali-mcp-server:0.1.0
     container_name: kali-mcp
     init: true

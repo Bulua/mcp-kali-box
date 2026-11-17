@@ -17,6 +17,9 @@ from starlette.routing import Route
 from .core.executor import CommandRunner
 from .tools.binary import register_binary_tools
 from .tools.credentials import register_credential_tools
+from .tools.discovery import register_discovery_tools
+from .tools.forensics import register_forensic_tools
+from .tools.internal import register_internal_tools
 from .tools.recon import register_recon_tools
 from .tools.web import register_web_tools
 from .tools.workspace import register_workspace_tools
@@ -43,6 +46,9 @@ def create_server() -> MCPServer:
     register_credential_tools(mcp, runner)
     register_binary_tools(mcp, runner)
     register_workspace_tools(mcp, runner)
+    register_discovery_tools(mcp, runner)
+    register_internal_tools(mcp, runner)
+    register_forensic_tools(mcp, runner)
     return mcp
 
 
