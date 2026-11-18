@@ -51,9 +51,10 @@ The image uses `kalilinux/kali-rolling:latest`. The container listens on all
 interfaces inside Docker at port 8000, but Compose publishes only
 `127.0.0.1:8000` to the host by default. Set `KALI_MCP_BIND_IP=0.0.0.0` in
 `.env` to publish the service on every host interface, or set it to a specific
-host interface IP to expose it only on that network. The local `workspace/`
-directory is mounted at `/workspace`; oversized reports are written to
-`/workspace/reports`.
+host interface IP to expose it only on that network. Set
+`KALI_MCP_HOST_PORT` to change the host-side port without changing the
+container's internal port. The local `workspace/` directory is mounted at
+`/workspace`; oversized reports are written to `/workspace/reports`.
 
 The build uses the Tsinghua TUNA Kali mirror for APT. The minimal Kali
 image does not necessarily contain the CA bundle needed for HTTPS before
@@ -91,6 +92,9 @@ KALI_MCP_BIND_IP=127.0.0.1
 # Or publish on every interface after enabling the required firewall rule:
 KALI_MCP_BIND_IP=0.0.0.0
 
+# Optional: use a non-default host-side port:
+KALI_MCP_HOST_PORT=27180
+
 KALI_MCP_API_TOKEN=<64-hex-character-token>
 ```
 
@@ -104,8 +108,8 @@ Authorization: Bearer <64-hex-character-token>
 exposes only service status. `/mcp`, `/sse`, and `/messages` return HTTP 401
 without a valid token.
 
-For a trusted LAN or VPN, `http://<server-ip>:8000/mcp` plus the bearer header
-is the minimum viable setup. For an internet-facing deployment, terminate TLS
+For a trusted LAN or VPN, `http://<server-ip>:<host-port>/mcp` plus the bearer
+header is the minimum viable setup. For an internet-facing deployment, terminate TLS
 first with a reverse proxy and restrict source IP addresses where possible. A
 bearer token sent over plain HTTP can be intercepted, so do not expose plain
 HTTP directly to the public internet.
