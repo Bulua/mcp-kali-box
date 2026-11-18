@@ -4,7 +4,7 @@ from kali_mcp.server import create_dual_transport_app, create_server
 
 
 @pytest.mark.asyncio
-async def test_server_registers_all_tool_groups_and_routes():
+async def test_server_registers_all_tool_groups_and_routes(monkeypatch):
     server = create_server()
     tools = await server.list_tools()
     tool_names = {tool.name for tool in tools}
@@ -49,6 +49,7 @@ async def test_server_registers_all_tool_groups_and_routes():
 
     assert tool_names == expected_tools
 
+    monkeypatch.setenv("KALI_MCP_API_TOKEN", "a" * 64)
     app = create_dual_transport_app()
     assert {route.path for route in app.router.routes} == {
         "/health",
@@ -56,3 +57,63 @@ async def test_server_registers_all_tool_groups_and_routes():
         "/messages",
         "/mcp",
     }
+
+
+async def test_bearer_token_middleware_rejects_invalid_token():
+    from kali_mcp.server import BearerTokenMiddleware
+
+    async def downstream(scope, receive, send):
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": b""})
+
+    middleware = BearerTokenMiddleware(downstream, "a" * 64)
+    messages = []
+
+    async def receive():
+        return {"type": "http.request", "body": b"", "more_body": False}
+
+    async def send(message):
+        messages.append(message)
+
+    scope = {
+        "type": "http",
+        "asgi": {"version": "3.0"},
+        "http_version": "1.1",
+        "method": "POST",
+        "path": "/mcp",
+        "headers": [(b"authorization", b"Bearer " + b"b" * 64)],
+        "query_string": b"",
+    }
+    await middleware(scope, receive, send)
+
+    assert messages[0]["status"] == 401
+
+
+async def test_bearer_token_middleware_allows_health_without_token():
+    from kali_mcp.server import BearerTokenMiddleware
+
+    async def downstream(scope, receive, send):
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": b""})
+
+    middleware = BearerTokenMiddleware(downstream, "a" * 64)
+    messages = []
+
+    async def receive():
+        return {"type": "http.request", "body": b"", "more_body": False}
+
+    async def send(message):
+        messages.append(message)
+
+    scope = {
+        "type": "http",
+        "asgi": {"version": "3.0"},
+        "http_version": "1.1",
+        "method": "GET",
+        "path": "/health",
+        "headers": [],
+        "query_string": b"",
+    }
+    await middleware(scope, receive, send)
+
+    assert messages[0]["status"] == 200

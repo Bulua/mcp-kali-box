@@ -11,7 +11,7 @@ services:
     container_name: kali-mcp
     init: true
     ports:
-      - "127.0.0.1:8000:8000"
+      - "${KALI_MCP_BIND_IP:-127.0.0.1}:8000:8000"
     volumes:
       - ./workspace:/workspace
     cap_add:
@@ -24,4 +24,5 @@ services:
     environment:
       KALI_MCP_TRANSPORT: dual
       KALI_MCP_MAX_OUTPUT: "8000"
+      KALI_MCP_API_TOKEN: ${KALI_MCP_API_TOKEN:?Set KALI_MCP_API_TOKEN in .env}
     restart: unless-stopped

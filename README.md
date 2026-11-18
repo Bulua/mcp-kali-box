@@ -40,6 +40,8 @@ mcp-kali-box/
 ## Build and Start
 
 ```powershell
+copy .env.example .env
+notepad .env
 docker compose build
 docker compose up -d
 curl http://127.0.0.1:8000/health
@@ -47,8 +49,11 @@ curl http://127.0.0.1:8000/health
 
 The image uses `kalilinux/kali-rolling:latest`. The container listens on all
 interfaces inside Docker at port 8000, but Compose publishes only
-`127.0.0.1:8000` to the host. The local `workspace/` directory is mounted at
-`/workspace`; oversized reports are written to `/workspace/reports`.
+`127.0.0.1:8000` to the host by default. Set `KALI_MCP_BIND_IP=0.0.0.0` in
+`.env` to publish the service on every host interface, or set it to a specific
+host interface IP to expose it only on that network. The local `workspace/`
+directory is mounted at `/workspace`; oversized reports are written to
+`/workspace/reports`.
 
 The build uses the Tsinghua TUNA Kali mirror for APT. The minimal Kali
 image does not necessarily contain the CA bundle needed for HTTPS before
@@ -65,6 +70,45 @@ docker build --build-arg KALI_APT_MIRROR=http://mirrors.aliyun.com/kali -f docke
 
 Set `KALI_MCP_TRANSPORT` to `dual`, `sse`, or `streamable-http` if you want a
 single transport. The default is `dual`.
+
+## Authentication and Remote Access
+
+All MCP endpoints require a bearer token. The token is read only from
+`KALI_MCP_API_TOKEN`, must contain exactly 64 hexadecimal characters, and is
+never baked into the image. Generate one with:
+
+```powershell
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+Create `.env` from `.env.example`, set the generated token, and choose the host
+binding:
+
+```env
+# Bind only to the local host:
+KALI_MCP_BIND_IP=127.0.0.1
+
+# Or publish on every interface after enabling the required firewall rule:
+KALI_MCP_BIND_IP=0.0.0.0
+
+KALI_MCP_API_TOKEN=<64-hex-character-token>
+```
+
+Remote callers must send:
+
+```http
+Authorization: Bearer <64-hex-character-token>
+```
+
+`/health` remains unauthenticated so Docker can run its health check, but it
+exposes only service status. `/mcp`, `/sse`, and `/messages` return HTTP 401
+without a valid token.
+
+For a trusted LAN or VPN, `http://<server-ip>:8000/mcp` plus the bearer header
+is the minimum viable setup. For an internet-facing deployment, terminate TLS
+first with a reverse proxy and restrict source IP addresses where possible. A
+bearer token sent over plain HTTP can be intercepted, so do not expose plain
+HTTP directly to the public internet.
 
 ## Additional tools
 
@@ -93,7 +137,10 @@ Newer Claude clients can use streamable HTTP:
   "mcpServers": {
     "kali-mcp": {
       "type": "http",
-      "url": "http://127.0.0.1:8000/mcp"
+      "url": "http://127.0.0.1:8000/mcp",
+      "headers": {
+        "Authorization": "Bearer <64-hex-character-token>"
+      }
     }
   }
 }
@@ -106,7 +153,10 @@ For an SSE-only client:
   "mcpServers": {
     "kali-mcp": {
       "type": "sse",
-      "url": "http://127.0.0.1:8000/sse"
+      "url": "http://127.0.0.1:8000/sse",
+      "headers": {
+        "Authorization": "Bearer <64-hex-character-token>"
+      }
     }
   }
 }
@@ -121,6 +171,9 @@ Place this in the Cursor MCP configuration and restart Cursor:
   "mcpServers": {
     "kali-mcp": {
       "url": "http://127.0.0.1:8000/mcp",
+      "headers": {
+        "Authorization": "Bearer <64-hex-character-token>"
+      },
       "enabled": true
     }
   }
