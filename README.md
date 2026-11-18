@@ -198,17 +198,16 @@ URL setting with `http://127.0.0.1:8000/mcp`, or select the legacy endpoint
 - Oversized or timed-out output is saved under `/workspace/reports`.
 - Workspace reads/writes cannot traverse outside `/workspace`.
 - Hashcat uses CPU OpenCL. No GPU device is passed through by default.
-- `NET_ADMIN`, `NET_RAW`, and `/dev/net/tun` support Nmap raw packets and later
-  OpenVPN use while keeping the MCP endpoint local.
+- The container runs as root with Docker privileged mode so raw-packet scans,
+  debuggers, and other Kali tools can use container privileges. A privileged
+  container has broad access to host devices and kernel interfaces; grant MCP
+  access only to trusted users and protect remote connections with TLS.
+- `nmap_scan` defaults to TCP connect scanning with Nmap's unprivileged mode
+  and skips host discovery/ARP probing. SYN, UDP, and OS detection modes use
+  raw sockets.
 
-For a Linux host, ensure the bind-mounted workspace is writable by UID 10000:
-
-```bash
-sudo chown -R 10000:10000 ./workspace
-```
-
-Windows Docker Desktop normally handles the bind-mount permissions without a
-manual ownership change.
+The bind-mounted `workspace/` is writable by container root. On Linux,
+files created there may be owned by root on the host.
 
 ## Local Development Checks
 

@@ -50,10 +50,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       yara \
     && rm -rf /var/lib/apt/lists/*
 
-RUN groupadd --gid 10000 kalimcp \
-    && useradd --uid 10000 --gid kalimcp --create-home --shell /usr/sbin/nologin kalimcp \
-    && mkdir -p /opt/kali-mcp /workspace \
-    && chown -R kalimcp:kalimcp /opt/kali-mcp /workspace
+RUN mkdir -p /opt/kali-mcp /workspace
 
 WORKDIR /opt/kali-mcp
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -96,10 +93,8 @@ RUN /opt/kali-mcp/.venv/bin/pip install \
     && command -v nuclei && command -v smbclient && command -v enum4linux-ng \
     && command -v feroxbuster && command -v sslscan && command -v nc \
     && command -v socat && command -v ldapsearch && command -v vol \
-    && command -v yara && command -v testssl && command -v impacket-rpcdump \
-    && chown -R kalimcp:kalimcp /opt/kali-mcp
+    && command -v yara && command -v testssl && command -v impacket-rpcdump
 
-USER kalimcp
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \

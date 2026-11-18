@@ -36,9 +36,11 @@ def register_recon_tools(mcp: MCPServer, run_command: CommandRunner) -> None:
     ) -> dict[str, Any]:
         """Run a bounded Nmap scan against an authorized target.
 
-        Use `scan_type="tcp_connect"` for broad compatibility, `scan_type="syn"`
-        for a faster TCP scan when the container has NET_RAW, and
-        `scan_type="udp"` for a slower UDP probe. `ports` accepts Nmap syntax
+        Use `scan_type="tcp_connect"` for a TCP connect scan. By default it
+        skips host discovery and ARP probing so Nmap does not need raw sockets.
+        OS detection still needs raw sockets even with a TCP connect scan.
+        Use `scan_type="syn"` or `scan_type="udp"` only when the Nmap process
+        has raw-socket privileges. `ports` accepts Nmap syntax
         such as `80,443` or `1-1000`. Set `scripts` to a comma-separated Nmap
         script name or category list. Results are truncated to protect the
         caller context; full oversized output is saved under /workspace/reports.
@@ -50,7 +52,9 @@ def register_recon_tools(mcp: MCPServer, run_command: CommandRunner) -> None:
         elif scan_type == "udp":
             argv.append("-sU")
         else:
-            argv.append("-sT")
+            if not os_detection:
+                argv.append("--unprivileged")
+            argv.extend(["-Pn", "--disable-arp-ping", "-sT"])
         if service_version:
             argv.append("-sV")
         if os_detection:
