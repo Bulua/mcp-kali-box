@@ -12,6 +12,29 @@ from ..core.executor import CommandRunner
 def register_web_tools(mcp: MCPServer, run_command: CommandRunner) -> None:
     """Register web testing and HTTP utility tools."""
 
+    @mcp.tool(name="ffuf_scan")
+    def ffuf_scan(
+        url: str,
+        dictionary_path: str = "/usr/share/wordlists/dirb/common.txt",
+        threads: int = 10,
+        rate_limit: int = 10,
+        timeout: int = 120,
+    ) -> dict[str, Any]:
+        """Discover paths with ffuf using bounded request rate and concurrency."""
+        from ..core.paths import resolve_tool_input_file
+
+        if not url or not url.strip() or not url.startswith(("http://", "https://")):
+            raise ValueError("url must be an http(s) URL")
+        if not 1 <= threads <= 50 or not 1 <= rate_limit <= 100:
+            raise ValueError("threads must be 1-50 and rate_limit must be 1-100")
+        dictionary = resolve_tool_input_file(dictionary_path)
+        target = url if "FUZZ" in url else url.rstrip("/") + "/FUZZ"
+        return run_command.run(
+            ["ffuf", "-s", "-u", target, "-w", str(dictionary), "-t", str(threads),
+             "-rate", str(rate_limit), "-max-time", str(max(1, timeout - 1))],
+            timeout=timeout,
+        )
+
     @mcp.tool(name="directory_scan")
     def directory_scan(
         url: str,

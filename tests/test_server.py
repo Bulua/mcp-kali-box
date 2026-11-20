@@ -45,6 +45,13 @@ async def test_server_registers_all_tool_groups_and_routes(monkeypatch):
         "impacket_rpcdump",
         "volatility_analyze",
         "yara_scan",
+        "ffuf_scan",
+        "bbot_scan",
+        "api_response_diff",
+        "jwt_inspect",
+        "browser_api_capture",
+        "binary_byte_diff",
+        "binary_diff",
     }
 
     assert tool_names == expected_tools

@@ -27,6 +27,7 @@ from .tools.internal import register_internal_tools
 from .tools.recon import register_recon_tools
 from .tools.web import register_web_tools
 from .tools.workspace import register_workspace_tools
+from .tools.skill_additions import register_skill_additions
 
 
 _TOKEN_PATTERN = re.compile(r"[0-9a-fA-F]{64}")
@@ -122,6 +123,7 @@ def create_server() -> MCPServer:
     register_discovery_tools(mcp, runner)
     register_internal_tools(mcp, runner)
     register_forensic_tools(mcp, runner)
+    register_skill_additions(mcp, runner)
     return mcp
 
 

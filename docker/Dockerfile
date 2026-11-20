@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       amass \
       binutils \
       binwalk \
+      chromium \
       ca-certificates \
       curl \
       dirb \
@@ -27,6 +28,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       httpx-toolkit \
       impacket-scripts \
       john \
+      openjdk-21-jre-headless \
       ldap-utils \
       libimage-exiftool-perl \
       nikto \
@@ -81,6 +83,11 @@ RUN python3 -m venv /opt/kali-mcp/.venv \
          --retries 10 \
          --timeout 120 \
          volatility3
+RUN /opt/kali-mcp/.venv/bin/pip install \
+      --index-url "${PYPI_INDEX_URL}" --no-cache-dir playwright bbot==3.0.2 \
+    && /opt/kali-mcp/.venv/bin/playwright install chromium \
+    && /opt/kali-mcp/.venv/bin/pip install \
+         --index-url "${PYPI_INDEX_URL}" --no-cache-dir ghidriff
 
 COPY pyproject.toml README.md ./
 COPY src ./src
