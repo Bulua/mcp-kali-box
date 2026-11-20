@@ -59,14 +59,14 @@ container's internal port. The local `workspace/` directory is mounted at
 The build uses the Tsinghua TUNA Kali mirror for APT. The minimal Kali
 image does not necessarily contain the CA bundle needed for HTTPS before
 `ca-certificates` is installed, while apt still verifies repository signatures
-through Kali's GPG key. Python packages use the Aliyun PyPI mirror by default.
+through Kali's GPG key. Python packages use the Tencent Cloud PyPI mirror by default.
 The base image still comes from Docker Hub; set `KALI_BASE_IMAGE` to a trusted
 registry mirror when Docker Hub is slow in your environment. To switch mirrors,
 change `KALI_APT_MIRROR`, `PYPI_INDEX_URL`, or `KALI_BASE_IMAGE` in
 `docker-compose.yml`, or build directly with another apt mirror:
 
 ```powershell
-docker build --build-arg KALI_APT_MIRROR=http://mirrors.aliyun.com/kali -f docker/Dockerfile -t kali-mcp-server:0.1.0 .
+docker build --build-arg KALI_APT_MIRROR=http://mirrors.tuna.tsinghua.edu.cn/kali -f docker/Dockerfile -t kali-mcp-server:0.1.0 .
 ```
 
 Set `KALI_MCP_TRANSPORT` to `dual`, `sse`, or `streamable-http` if you want a

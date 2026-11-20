@@ -3,7 +3,7 @@ FROM ${KALI_BASE_IMAGE}
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG KALI_APT_MIRROR=http://mirrors.tuna.tsinghua.edu.cn/kali
-ARG PYPI_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/
+ARG PYPI_INDEX_URL=https://mirrors.cloud.tencent.com/pypi/simple/
 
 RUN printf 'deb %s kali-rolling main contrib non-free non-free-firmware\n' "$KALI_APT_MIRROR" > /etc/apt/sources.list \
     && rm -f /etc/apt/sources.list.d/kali.sources
@@ -12,7 +12,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       amass \
       binutils \
       binwalk \
-      chromium \
       ca-certificates \
       curl \
       dirb \
@@ -84,8 +83,7 @@ RUN python3 -m venv /opt/kali-mcp/.venv \
          --timeout 120 \
          volatility3
 RUN /opt/kali-mcp/.venv/bin/pip install \
-      --index-url "${PYPI_INDEX_URL}" --no-cache-dir playwright bbot==3.0.2 \
-    && /opt/kali-mcp/.venv/bin/playwright install chromium \
+      --index-url "${PYPI_INDEX_URL}" --no-cache-dir bbot==3.0.2 \
     && /opt/kali-mcp/.venv/bin/pip install \
          --index-url "${PYPI_INDEX_URL}" --no-cache-dir ghidriff
 

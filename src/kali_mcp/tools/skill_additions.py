@@ -137,33 +137,6 @@ def register_skill_additions(mcp: MCPServer, runner: CommandRunner) -> None:
                 "has_signature": bool(parts[2]), "signature_verified": False,
                 "warnings": warnings}
 
-    @mcp.tool(name="browser_api_capture")
-    def browser_api_capture(url: str, output_name: str = "capture", timeout: int = 60) -> dict[str, Any]:
-        """Capture page URL, title and requests with headless Chromium."""
-        if not url.startswith(("http://", "https://")):
-            raise ValueError("url must be HTTP(S)")
-        if not re.fullmatch(r"[a-z][a-z0-9_-]{0,63}", output_name):
-            raise ValueError("invalid output_name")
-        output = safe_child(workspace_root(), "browser/" + output_name + ".json")
-        output.parent.mkdir(parents=True, exist_ok=True)
-        script = """import json, sys
-from playwright.sync_api import sync_playwright
-
-url, out = sys.argv[1:]
-with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True, args=['--no-sandbox'])
-    page = browser.new_page()
-    requests = []
-    page.on('request', lambda request: requests.append({'method': request.method, 'url': request.url}))
-    page.goto(url, wait_until='domcontentloaded', timeout=30000)
-    with open(out, 'w', encoding='utf-8') as handle:
-        json.dump({'url': page.url, 'title': page.title(), 'requests': requests[:1000]}, handle)
-    browser.close()
-"""
-        result = runner.run(["python3", "-c", script, url, str(output)], timeout=timeout)
-        result["output_path"] = str(output)
-        return result
-
     @mcp.tool(name="binary_byte_diff")
     def binary_byte_diff(old_path: str, new_path: str) -> dict[str, Any]:
         """Compare two local binaries by size, hash and changed byte ranges; no function analysis."""

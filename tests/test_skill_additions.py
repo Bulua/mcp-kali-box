@@ -1,4 +1,3 @@
-import ast
 import base64
 import json
 
@@ -50,7 +49,7 @@ def test_api_diff_omits_session_secrets(monkeypatch):
     assert "secret" not in json.dumps(result)
 
 
-def test_jwt_browser_and_binary_helpers(monkeypatch, tmp_path):
+def test_jwt_and_binary_helpers(monkeypatch, tmp_path):
     monkeypatch.setenv("KALI_MCP_WORKSPACE", str(tmp_path))
     server = create_server()
     def encode(obj):
@@ -59,14 +58,6 @@ def test_jwt_browser_and_binary_helpers(monkeypatch, tmp_path):
     result = call(server, "jwt_inspect", token=token)
     assert result["signature_verified"] is False
     assert "token is expired" in result["warnings"]
-
-    commands = []
-    def capture(self, argv, *, timeout):
-        commands.append(argv)
-        return {"success": True}
-    monkeypatch.setattr(CommandRunner, "run", capture)
-    call(server, "browser_api_capture", url="https://example.test")
-    ast.parse(commands[-1][2])
 
     (tmp_path / "old.bin").write_bytes(b"abcd")
     (tmp_path / "new.bin").write_bytes(b"abXd")
