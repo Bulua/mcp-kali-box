@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       amass \
       binutils \
       binwalk \
+      build-essential \
       ca-certificates \
       curl \
       dirb \
@@ -37,6 +38,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       openvpn \
       pocl-opencl-icd \
       python3 \
+      python3-dev \
       python3-pip \
       python3-venv \
       smbclient \
